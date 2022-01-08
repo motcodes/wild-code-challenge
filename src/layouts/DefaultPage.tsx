@@ -6,7 +6,7 @@ export const DefaultPage: React.FC<Props> = ({ children }) => {
   return (
     <>
       <header>
-        <h1>header</h1>
+        <h2>XYZ Photography</h2>
       </header>
       <main tw="flex-1">{children}</main>
       <footer>
