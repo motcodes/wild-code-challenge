@@ -3,12 +3,10 @@ import { AppProps } from "next/app";
 import { DefaultSeo, DefaultSeoProps } from "next-seo";
 import { GlobalStyles } from "~/styles/GlobalStyles";
 
-import "~/styles/fonts.css";
-
 const defaultSeo: DefaultSeoProps = {
-  title: "wild-next",
-  titleTemplate: "%s | wild-next",
-  description: "This is the wild-next boilerplate.",
+  title: "Wild Code Challenge",
+  titleTemplate: "%s | wild",
+  description: "This is the 2021 Wild Code Challenge.",
   twitter: {
     cardType: "summary_large_image",
   },
@@ -31,8 +29,8 @@ const App = ({ Component, pageProps }: AppProps) => {
         <link rel="manifest" href="/site.webmanifest" crossOrigin="use-credentials" />
         <meta name="msapplication-TileColor" content="#ffffff" />
         <meta name="theme-color" content="#ffffff" />
-        <link rel="preload" href="/fonts/Tungsten-Bold.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href="/fonts/Tungsten-Semibold.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/Tungsten-Bold.woff2" as="font" type="font/woff2" crossOrigin="" />
+        <link rel="preload" href="/fonts/Tungsten-Semibold.woff2" as="font" type="font/woff2" crossOrigin="" />
       </NextHead>
       <GlobalStyles />
       <Component {...pageProps} />
