@@ -31,7 +31,8 @@ const App = ({ Component, pageProps }: AppProps) => {
         <link rel="manifest" href="/site.webmanifest" crossOrigin="use-credentials" />
         <meta name="msapplication-TileColor" content="#ffffff" />
         <meta name="theme-color" content="#ffffff" />
-        <link rel="preload" href="/fonts/Inter-Regular.otf" as="font" type="font/otf" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/Tungsten-Bold.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/Tungsten-Semibold.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </NextHead>
       <GlobalStyles />
       <Component {...pageProps} />

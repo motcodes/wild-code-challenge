@@ -9,7 +9,7 @@ module.exports = {
       black: "#000000",
     },
     fontFamily: {
-      sans: ["Inter", ...defaultTheme.fontFamily.sans],
+      sans: ["Tungsten", ...defaultTheme.fontFamily.sans],
     },
     fontSize: {
       xs: [wildConfig.utils.pxRem(12), 1.5],
