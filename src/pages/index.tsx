@@ -23,6 +23,14 @@ interface HeadingProps {
   };
 }
 
+export interface ProjectProps {
+  name: string;
+  description: string;
+  date: string;
+  imageUrl: string;
+  backgroundUrl: string;
+}
+
 const Index: NextPage<Props> = () => {
   const [projectCounter, setProjectCounter] = useState<number>(0);
 
@@ -157,7 +165,7 @@ const ImageRight = styled.img`
   grid-row: 1;
 `;
 
-const projects = [
+const projects: Array<ProjectProps> = [
   {
     name: "Everyday Flowers",
     description: "Johanna Hobel for Vouge",
