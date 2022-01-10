@@ -11,6 +11,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  images: {
+    domains: ["localhost"],
+  },
 
   webpack: (config) => {
     // https://react-svgr.com/

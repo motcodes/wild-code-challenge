@@ -22,7 +22,7 @@ const CustomStyles = createGlobalStyle`
 
 
   html {
-    ${tw`bg-white text-black cursor-default leading-none min-h-full`}
+    ${tw`bg-white text-white cursor-default leading-none min-h-full`}
   }
 
   body {
