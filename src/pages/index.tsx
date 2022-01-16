@@ -41,6 +41,7 @@ const Index: NextPage<Props> = () => {
   const imageCenter = projects[projectCounter];
   const imageRight = projects[projectCounter === 4 ? projects.length - projectCounter : projectCounter + 1];
 
+  console.log(projects[projectCounter].name);
   const loader = ({ src }: { src: string }) => `http://localhost:3000/${src}`;
 
   console.log(imageRef.current?.getBoundingClientRect());
@@ -51,6 +52,12 @@ const Index: NextPage<Props> = () => {
       <DefaultPage>
         <Container imageUrl={`http://localhost:3000/${imageCenter.backgroundUrl}`}>
           <Grid>
+            <ImageLeftLeft
+              width={248}
+              height={330}
+              src={`http://localhost:3000/${imageLeft.imageUrl}`}
+              alt={imageLeft.name}
+            />
             <ImageLeft
               width={248}
               height={330}
@@ -77,6 +84,12 @@ const Index: NextPage<Props> = () => {
               />
             </div>
             <ImageRight
+              width={248}
+              height={330}
+              src={`http://localhost:3000/${imageRight.imageUrl}`}
+              alt={imageRight.name}
+            />
+            <ImageRightRight
               width={248}
               height={330}
               src={`http://localhost:3000/${imageRight.imageUrl}`}
@@ -149,6 +162,11 @@ const Heading = styled.h1<HeadingProps>`
   }
 `;
 
+const ImageLeftLeft = styled.img`
+  align-self: end;
+  grid-column: 1;
+  grid-row: 2;
+`;
 const ImageLeft = styled.img`
   align-self: end;
   grid-column: 1;
@@ -160,6 +178,11 @@ const ImageCenter = styled.img`
   grid-row: 1 / 3;
 `;
 const ImageRight = styled.img`
+  align-self: start;
+  grid-column: 6;
+  grid-row: 1;
+`;
+const ImageRightRight = styled.img`
   align-self: start;
   grid-column: 6;
   grid-row: 1;

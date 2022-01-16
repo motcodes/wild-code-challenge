@@ -1,12 +1,15 @@
 import React from "react";
-import { Carousel } from "~/components/carousel";
+// import { Carousel } from "~/components/carousel";
+import { Carousel, CarouselItem } from "~/components/car3";
 import { DefaultPage } from "~/layouts/DefaultPage";
+import { isClient } from "~/utils/common";
 import { ProjectProps } from ".";
 
 export default function Test() {
   return (
     <DefaultPage>
-      <Carousel data={projects} />
+      {/* <Carousel data={projects} /> */}
+      {isClient && <Carousel data={projects} />}
     </DefaultPage>
   );
 }
@@ -44,7 +47,7 @@ export const projects: Array<ProjectProps> = [
     name: "She was born urban",
     description: "Johanna Hobel for S1",
     date: "Dec 2021",
-    imageUrl: "images/image04.jpg",
+    imageUrl: "images/image05.jpg",
     backgroundUrl: "images/image05@2x.jpg",
   },
 ];
