@@ -16,6 +16,12 @@ export interface SizesProps {
   width: number;
   height: number;
 }
+export interface InfoPositionProps {
+  top?: number;
+  left?: number;
+  bottom?: number;
+  right?: number;
+}
 export interface ImageTranslationProps {
   x: number;
   y: number;

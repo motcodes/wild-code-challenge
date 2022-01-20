@@ -2,7 +2,7 @@ import gsap from "gsap";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import charming from "charming";
 import tw, { styled } from "twin.macro";
-import { SizesProps, SlidePositionProps, SlideProps, ImageTranslationProps } from "types";
+import { SizesProps, SlidePositionProps, SlideProps, ImageTranslationProps, InfoPositionProps } from "types";
 import { Content } from "./slideContent";
 import { breakTitle } from "./breakTitle";
 
@@ -13,11 +13,13 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const contentRef = useRef<HTMLImageElement>(null);
+  const infoRef = useRef<HTMLImageElement>(null);
 
   const headingOutlinedRef = useRef<HTMLHeadingElement>(null);
   const headingFilledRef = useRef<HTMLHeadingElement>(null);
 
   const [wrapperSizes, setWrapperSizes] = useState<SizesProps>({ width: 0, height: 0 });
+  const [infoPosition, setInfoPosition] = useState<InfoPositionProps>({ top: 0, left: 0 });
   const [imageTranslation, setImageTranslation] = useState<Array<ImageTranslationProps>>([]);
 
   const [slidePosition, toggleSlidePosition] = useState<SlidePositionProps>({
@@ -72,6 +74,13 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
           scale: sizes.scale,
         },
       ];
+
+      if (wrapperRef.current && infoRef.current) {
+        setInfoPosition({
+          bottom: (sizes.height * sizes.scale) / 5 - 16,
+          left: allTransforms[3].x + infoRef.current.offsetWidth - 12,
+        });
+      }
       setImageTranslation(allTransforms);
     }
   }
@@ -125,6 +134,13 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
         y: 80,
         skewY: 15,
       });
+
+      // @ts-ignore
+      gsap.set(infoRef.current?.children, {
+        autoAlpha: 0,
+        y: 30,
+        skewY: 15,
+      });
     }
   }
 
@@ -152,6 +168,8 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
       gsap.to(headingOutlinedRef.current?.children, initialMotion);
       // @ts-ignore
       gsap.to(headingFilledRef.current?.children, initialMotion);
+      // @ts-ignore
+      gsap.to(infoRef.current?.children, { ...initialMotion, delay: 0.5 });
 
       positionSlide(2);
     }
@@ -213,6 +231,13 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
         y: 80,
         skewY: -15,
       });
+
+      // @ts-ignore
+      gsap.set(infoRef.current?.children, {
+        autoAlpha: 1,
+        y: 30,
+        skewY: -15,
+      });
     }
   }
 
@@ -236,6 +261,11 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
       gsap.to(headingOutlinedRef.current?.children, letterAnimationProps);
       // @ts-ignore
       gsap.to(headingFilledRef.current?.children, letterAnimationProps);
+      // @ts-ignore
+      gsap.to(infoRef.current?.children, {
+        ...letterAnimationProps,
+        y: -30,
+      });
 
       gsap.to(wrapperRef.current, {
         duration: 1.662,
@@ -293,6 +323,11 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
         headingRef={headingFilledRef}
         data={data}
       />
+      <Info ref={infoRef} className="slide-info" bottom={infoPosition.bottom || 0} left={infoPosition.left || 0}>
+        <p>{data.description}</p>
+        <p>{data.date}</p>
+        <button>Have a look</button>
+      </Info>
     </Container>
   );
 });
@@ -300,13 +335,16 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
 const Container = styled.div`
   ${tw`relative w-full flex items-center pointer-events-none`}
   grid-area: slide;
+  max-width: 512px;
+  margin: 0 auto;
 
   &.slide--current {
     pointer-events: auto;
     z-index: 6;
 
     .slide-content,
-    .slide-wrapper {
+    .slide-wrapper,
+    .slide-info {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
@@ -329,6 +367,9 @@ const Container = styled.div`
     top: 50%;
     transform: translateY(-50%);
   }
+  .slide-info {
+    opacity: 0;
+  }
 
   h2 {
     position: absolute;
@@ -338,7 +379,7 @@ const Container = styled.div`
     transform: translate(-50%, -50%);
     font-style: normal;
     font-weight: normal;
-    font-size: 14vw;
+    font-size: clamp(96px, 14vw, 220px);
     line-height: 80%;
 
     text-align: center;
@@ -369,4 +410,27 @@ const SlideImage = styled.img`
 const OutlinedTitle = styled.h2`
   color: transparent;
   -webkit-text-stroke: 2px white;
+`;
+
+const Info = styled.div<{ bottom: number; left: number }>`
+  ${tw`absolute justify-self-start flex flex-col justify-center items-end uppercase `}
+  row-gap: 16px;
+  font-family: Helvetica;
+  font-size: 10px;
+  line-height: 120%;
+  letter-spacing: 0.08em;
+  width: 110px;
+
+  bottom: ${({ bottom }) => `${bottom}px`};
+  left: ${({ left }) => `${left}px`};
+
+  button {
+    ${tw`relative flex flex-row items-start bg-white rounded-3xl font-bold uppercase select-none`}
+    padding: 9px 16px 8px;
+    font-family: Helvetica;
+    font-size: 10px;
+    line-height: 120%;
+    letter-spacing: 0.08em;
+    color: #202020;
+  }
 `;

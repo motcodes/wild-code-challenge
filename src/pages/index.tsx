@@ -25,7 +25,6 @@ const Index: NextPage<Props> = ({ projects }) => {
     next: 0,
     prev: 0,
   });
-  const [newCurrent, setNewCurrent] = useState<number>(0);
 
   const [slideBackgroundUrl, setSlideBackgroundUrl] = useState<string>(projects[slidesIndices.current].backgroundUrl);
 
@@ -52,7 +51,7 @@ const Index: NextPage<Props> = ({ projects }) => {
   );
 
   function handleClick(index: number) {
-    setNewCurrent(index);
+    // setNewCurrent(index);
     if (slidesRefs.current[index].isPositionedRight()) {
       navigate("next");
     } else if (slidesRefs.current[index].isPositionedLeft()) {
@@ -164,7 +163,17 @@ const Index: NextPage<Props> = ({ projects }) => {
 
   // slide rerender on window resize
   useEffect(() => {
-    window.addEventListener("resize", () => renderSlides(), false);
+    window.addEventListener(
+      "resize",
+      () => {
+        slidesRefs.current.forEach((slide) => {
+          slide.hide();
+          slide.reset();
+        });
+        renderSlides();
+      },
+      false
+    );
 
     if (slidesRefs.current) {
       renderSlides();
