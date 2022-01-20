@@ -17,6 +17,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "charming": "3.0.2",
     "gsap": "3.9.1",
     "next": "11.1.2",
     "next-seo": "4.28.1",
