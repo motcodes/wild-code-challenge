@@ -1,103 +1,197 @@
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
-import { useRef, useState } from "react";
-import tw, { css, styled } from "twin.macro";
+import { useCallback, useEffect, useRef, useState } from "react";
+import tw, { styled } from "twin.macro";
+import gsap from "gsap";
 
+import { ProjectProps, SlideIndicesProps, SlideRefProps } from "types";
 import { DefaultPage } from "~/layouts/DefaultPage";
-
-interface Props {}
-
-interface ContainerProps {
-  imageUrl: string;
-}
-interface HeadingProps {
-  imageBounds?: {
-    bottom: number;
-    height: number;
-    left: number;
-    right: number;
-    top: number;
-    width: number;
-    x: number;
-    y: number;
-  };
+import { Slide } from "~/components/slide";
+import { siteUrl } from "~/utils/siteUrl";
+interface Props {
+  projects: Array<ProjectProps>;
 }
 
-export interface ProjectProps {
-  name: string;
-  description: string;
-  date: string;
-  imageUrl: string;
-  backgroundUrl: string;
-}
+const Index: NextPage<Props> = ({ projects }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const backgroundImageRef = useRef<HTMLDivElement>(null);
+  const slideshowRef = useRef<HTMLDivElement>(null);
+  const slidesRefs = useRef<Array<SlideRefProps>>([]);
 
-const Index: NextPage<Props> = () => {
-  const [projectCounter, setProjectCounter] = useState<number>(0);
+  const [slidesTotal, setSlidesTotal] = useState<number>(0);
 
-  const imageRef = useRef<HTMLImageElement>(null);
+  const [slidesIndices, setSlidesIndices] = useState<SlideIndicesProps>({
+    current: 0,
+    next: 0,
+    prev: 0,
+  });
+  const [newCurrent, setNewCurrent] = useState<number>(0);
 
-  // eslint-disable-next-line no-console
-  const imageLeft = projects[projects.length - projectCounter - 1];
-  const imageCenter = projects[projectCounter];
-  const imageRight = projects[projectCounter === 4 ? projects.length - projectCounter : projectCounter + 1];
+  const [slideBackgroundUrl, setSlideBackgroundUrl] = useState<string>(projects[slidesIndices.current].backgroundUrl);
 
-  console.log(projects[projectCounter].name);
-  const loader = ({ src }: { src: string }) => `http://localhost:3000/${src}`;
+  const renderSlides = useCallback(
+    (renderSlides: number | undefined = undefined) => {
+      if (slidesRefs.current) {
+        const slidesLength = slidesRefs.current.length;
+        const currentIndex = renderSlides === undefined ? slidesIndices.current : renderSlides;
+        const nextIndex = currentIndex + 1 <= slidesLength - 1 ? currentIndex + 1 : 0;
+        const prevIndex = currentIndex - 1 >= 0 ? currentIndex - 1 : slidesLength - 1;
 
-  console.log(imageRef.current?.getBoundingClientRect());
+        setSlidesIndices({
+          current: currentIndex,
+          next: nextIndex,
+          prev: prevIndex,
+        });
+
+        slidesRefs.current[currentIndex].setCurrent();
+        slidesRefs.current[nextIndex].setRight();
+        slidesRefs.current[prevIndex].setLeft();
+      }
+    },
+    [slidesIndices]
+  );
+
+  function handleClick(index: number) {
+    setNewCurrent(index);
+    if (slidesRefs.current[index].isPositionedRight()) {
+      navigate("next");
+    } else if (slidesRefs.current[index].isPositionedLeft()) {
+      navigate("prev");
+    }
+  }
+
+  let animating = false;
+  function navigate(direction: "next" | "prev") {
+    if (animating) return;
+    animating = true;
+
+    const upcomingPosition =
+      direction === "next"
+        ? slidesIndices.current < slidesTotal - 2
+          ? slidesIndices.current + 2
+          : Math.abs(slidesTotal - 2 - slidesIndices.current)
+        : slidesIndices.current >= 2
+        ? slidesIndices.current - 2
+        : Math.abs(slidesTotal - 2 + slidesIndices.current);
+
+    const newCurrent =
+      direction === "next"
+        ? slidesIndices.current < slidesTotal - 1
+          ? slidesIndices.current + 1
+          : 0
+        : slidesIndices.current > 0
+        ? slidesIndices.current - 1
+        : slidesTotal - 1;
+
+    gsap.fromTo(
+      backgroundImageRef.current,
+      {
+        autoAlpha: 0,
+      },
+      {
+        autoAlpha: 1,
+        delay: 1.2,
+        duration: 1.662,
+        ease: "power4.inOut",
+      }
+    );
+
+    setSlideBackgroundUrl(projects[slidesIndices.current].backgroundUrl);
+
+    setSlidesIndices({
+      current: newCurrent,
+      next: slidesIndices.next,
+      prev: slidesIndices.prev,
+    });
+
+    const currentSlide = slidesRefs.current[slidesIndices.current];
+    const nextSlide = slidesRefs.current[slidesIndices.next];
+    const prevSlide = slidesRefs.current[slidesIndices.prev];
+    const upcomingSlide = slidesRefs.current[upcomingPosition];
+
+    prevSlide
+      .moveToPosition({
+        position: direction === "next" ? -2 : 0,
+        delay: direction === "next" ? 0 : 0.3,
+      })
+      // @ts-ignore
+      .then(() => {
+        if (direction === "next") {
+          prevSlide.hide();
+        }
+      });
+
+    currentSlide.moveToPosition({
+      position: direction === "next" ? -1 : 1,
+      delay: 0.07,
+    });
+
+    nextSlide
+      .moveToPosition({
+        position: direction === "next" ? 0 : 2,
+        delay: direction === "next" ? 0.3 : 0,
+      })
+      // @ts-ignore
+      .then(() => {
+        if (direction === "prev") {
+          nextSlide.hide();
+        }
+      });
+
+    upcomingSlide
+      .moveToPosition({
+        position: direction === "next" ? 1 : -1,
+        from: direction === "next" ? 2 : -2,
+        delay: 0.21,
+      })
+      // @ts-ignore
+      .then(() => {
+        [nextSlide, currentSlide, prevSlide].forEach((slide) => slide.reset());
+        renderSlides(newCurrent);
+        animating = false;
+      });
+  }
+
+  // initial Render
+  useEffect(() => {
+    if (slidesRefs.current) {
+      slidesRefs.current = slidesRefs.current.slice(0, projects.length);
+      setSlidesTotal(slidesRefs.current.length);
+      renderSlides();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projects, slidesTotal, slidesRefs]);
+
+  // slide rerender on window resize
+  useEffect(() => {
+    window.addEventListener("resize", () => renderSlides(), false);
+
+    if (slidesRefs.current) {
+      renderSlides();
+    }
+
+    return () => window.removeEventListener("resize", () => renderSlides(), false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
-      <NextSeo title="Index" />
+      <NextSeo title="Code Challange" />
       <DefaultPage>
-        <Container imageUrl={`http://localhost:3000/${imageCenter.backgroundUrl}`}>
-          <Grid>
-            <ImageLeftLeft
-              width={248}
-              height={330}
-              src={`http://localhost:3000/${imageLeft.imageUrl}`}
-              alt={imageLeft.name}
-            />
-            <ImageLeft
-              width={248}
-              height={330}
-              src={`http://localhost:3000/${imageLeft.imageUrl}`}
-              alt={imageLeft.name}
-            />
-            <div className="center">
-              <div tw="absolute inset-0 flex justify-center items-center">
-                {imageRef.current && (
-                  <Heading
-                    imageBounds={imageRef.current.getBoundingClientRect()}
-                    data-content={projects[projectCounter].name}
-                  >
-                    {projects[projectCounter].name}
-                  </Heading>
-                )}
-              </div>
-              <ImageCenter
-                ref={imageRef}
-                width={512}
-                height={680}
-                src={`http://localhost:3000/${imageCenter.imageUrl}`}
-                alt={imageCenter.name}
+        <Container ref={containerRef}>
+          <BackgroundImage imageUrl={slideBackgroundUrl} />
+          <BackgroundImage ref={backgroundImageRef} imageUrl={projects[slidesIndices.current].backgroundUrl} />
+          <Slideshow ref={slideshowRef}>
+            {projects.map((project, index) => (
+              <Slide
+                ref={(el) => (slidesRefs.current[index] = el)}
+                data={project}
+                wrapperOnClick={() => handleClick(index)}
+                key={project.name}
               />
-            </div>
-            <ImageRight
-              width={248}
-              height={330}
-              src={`http://localhost:3000/${imageRight.imageUrl}`}
-              alt={imageRight.name}
-            />
-            <ImageRightRight
-              width={248}
-              height={330}
-              src={`http://localhost:3000/${imageRight.imageUrl}`}
-              alt={imageRight.name}
-            />
-          </Grid>
+            ))}
+          </Slideshow>
         </Container>
-        {/* <Image src={image1} alt="image 01" width={512} objectFit="cover" /> */}
       </DefaultPage>
     </>
   );
@@ -105,123 +199,67 @@ const Index: NextPage<Props> = () => {
 
 export default Index;
 
-const Container = styled.div<ContainerProps>`
+const Container = styled.div`
   ${tw`fixed bg-cover bg-no-repeat bg-center h-full w-full`}
+`;
+
+const BackgroundImage = styled.div<{ imageUrl: string }>`
+  ${tw`absolute inset-0 w-full h-full`}
   background-image: ${({ imageUrl }) => `url('${imageUrl}')`};
-  /* inset: -256px; */
-  /* filter: blur(200px); */
 `;
 
-const Grid = styled.section`
-  ${tw`grid grid-cols-6 grid-rows-2 h-full w-full`};
+const Slideshow = styled.section`
+  ${tw`relative grid h-full w-full`};
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 100%;
+  grid-template-areas: "... slide ...";
+  gap: 16px;
   padding: 16px;
-  gap: 8px;
   backdrop-filter: blur(200px);
-
-  img {
-    ${tw`rounded-2xl border border-black w-full`}
-  }
-  .center {
-    align-self: center;
-    grid-column: 3 / 5;
-    grid-row: 1 / 3;
-  }
+  z-index: 5;
 `;
 
-const Heading = styled.h1<HeadingProps>`
-  ${tw`uppercase text-center`}
-
-  font-size: 240px;
-  max-width: 50%;
-  line-height: 0.8;
-  letter-spacing: 0.04em;
-  background-clip: text;
-  -webkit-text-stroke: 1px white;
-  -webkit-text-fill-color: transparent;
-
-  &::before {
-    content: attr(data-content);
-    position: absolute;
-    z-index: 10;
-    background-clip: unset;
-    -webkit-text-fill-color: white;
-    text-overflow: clip;
-
-    ${({ imageBounds }) => {
-      return css`
-        width: ${imageBounds?.width}px;
-        height: ${imageBounds?.height}px;
-        /* top: ${imageBounds?.top}px;
-        right: ${imageBounds?.right}px;
-        bottom: ${imageBounds?.bottom}px;
-        left: ${imageBounds?.left}px; */
-      `;
-    }}
-
-    overflow: hidden;
-  }
-`;
-
-const ImageLeftLeft = styled.img`
-  align-self: end;
-  grid-column: 1;
-  grid-row: 2;
-`;
-const ImageLeft = styled.img`
-  align-self: end;
-  grid-column: 1;
-  grid-row: 2;
-`;
-const ImageCenter = styled.img`
-  align-self: center;
-  grid-column: 3 / 5;
-  grid-row: 1 / 3;
-`;
-const ImageRight = styled.img`
-  align-self: start;
-  grid-column: 6;
-  grid-row: 1;
-`;
-const ImageRightRight = styled.img`
-  align-self: start;
-  grid-column: 6;
-  grid-row: 1;
-`;
-
-const projects: Array<ProjectProps> = [
-  {
-    name: "Everyday Flowers",
-    description: "Johanna Hobel for Vouge",
-    date: "Jun 2019",
-    imageUrl: "images/image01.jpg",
-    backgroundUrl: "images/image01@2x.jpg",
-  },
-  {
-    name: "The Wilder Night",
-    description: "Johanna Hobel for Wild",
-    date: "Dec 2019",
-    imageUrl: "images/image02.jpg",
-    backgroundUrl: "images/image02@2x.jpg",
-  },
-  {
-    name: "Smooth Memories",
-    description: "Johanna Hobel for Chanel",
-    date: "Feb 2020",
-    imageUrl: "images/image03.jpg",
-    backgroundUrl: "images/image03@2x.jpg",
-  },
-  {
-    name: "The Future Universe",
-    description: "Johanna Hobel for On",
-    date: "Apr 2020",
-    imageUrl: "images/image04.jpg",
-    backgroundUrl: "images/image04@2x.jpg",
-  },
-  {
-    name: "She was born urban",
-    description: "Johanna Hobel for S1",
-    date: "Dec 2021",
-    imageUrl: "images/image04.jpg",
-    backgroundUrl: "images/image05@2x.jpg",
-  },
-];
+export async function getServerSideProps() {
+  const projects: Array<ProjectProps> = [
+    {
+      name: "Everyday\nFlowers",
+      description: "Johanna Hobel for Vouge",
+      date: "Jun 2019",
+      imageUrl: "images/image01.jpg",
+      backgroundUrl: siteUrl("images/image01@2x.jpg"),
+    },
+    {
+      name: "The Wilder\nNight",
+      description: "Johanna Hobel for Wild",
+      date: "Dec 2019",
+      imageUrl: "images/image02.jpg",
+      backgroundUrl: siteUrl("images/image02@2x.jpg"),
+    },
+    {
+      name: "Smooth\nMemories",
+      description: "Johanna Hobel for Chanel",
+      date: "Feb 2020",
+      imageUrl: "images/image03.jpg",
+      backgroundUrl: siteUrl("images/image03@2x.jpg"),
+    },
+    {
+      name: "The Future\nUniverse",
+      description: "Johanna Hobel for On",
+      date: "Apr 2020",
+      imageUrl: "images/image04.jpg",
+      backgroundUrl: siteUrl("images/image04@2x.jpg"),
+    },
+    {
+      name: "She was\nborn urban",
+      description: "Johanna Hobel for S1",
+      date: "Dec 2021",
+      imageUrl: "images/image05.jpg",
+      backgroundUrl: siteUrl("images/image05@2x.jpg"),
+    },
+  ];
+  return {
+    props: {
+      projects,
+    },
+  };
+}

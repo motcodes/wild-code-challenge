@@ -3,31 +3,14 @@ import { NextPage } from "next";
 import { NextSeo } from "next-seo";
 import { useCallback, useEffect, useRef, useState } from "react";
 import tw, { styled } from "twin.macro";
-import { Slide, SlideRefProps } from "~/components/slide";
+import { ProjectProps, SlideIndicesProps, SlideRefProps } from "types";
+import { Slide } from "~/components/slide";
 
 import { DefaultPage } from "~/layouts/DefaultPage";
 import { siteUrl } from "~/utils/siteUrl";
 
-export interface ProjectProps {
-  name: string;
-  description: string;
-  date: string;
-  imageUrl: string;
-  backgroundUrl: string;
-}
-
 interface Props {
   projects: Array<ProjectProps>;
-}
-
-interface ContainerProps {
-  imageUrl?: string;
-}
-
-interface SlideIndicesProps {
-  current: number;
-  next: number;
-  prev: number;
 }
 
 const Test2: NextPage<Props> = ({ projects }) => {
@@ -108,7 +91,7 @@ const Test2: NextPage<Props> = ({ projects }) => {
       },
       {
         autoAlpha: 1,
-        delay: 0.25,
+        delay: 1.2,
         duration: 1.662,
         ease: "power4.inOut",
       }
@@ -212,7 +195,7 @@ const Test2: NextPage<Props> = ({ projects }) => {
 
 export default Test2;
 
-const Container = styled.div<ContainerProps>`
+const Container = styled.div`
   ${tw`fixed bg-cover bg-no-repeat bg-center h-full w-full`}
 `;
 
@@ -235,35 +218,35 @@ const Slideshow = styled.section`
 export async function getServerSideProps() {
   const projects: Array<ProjectProps> = [
     {
-      name: "Everyday Flowers",
+      name: "Everyday\nFlowers",
       description: "Johanna Hobel for Vouge",
       date: "Jun 2019",
       imageUrl: "images/image01.jpg",
       backgroundUrl: siteUrl("images/image01@2x.jpg"),
     },
     {
-      name: "The Wilder Night",
+      name: "The Wilder\nNight",
       description: "Johanna Hobel for Wild",
       date: "Dec 2019",
       imageUrl: "images/image02.jpg",
       backgroundUrl: siteUrl("images/image02@2x.jpg"),
     },
     {
-      name: "Smooth Memories",
+      name: "Smooth\nMemories",
       description: "Johanna Hobel for Chanel",
       date: "Feb 2020",
       imageUrl: "images/image03.jpg",
       backgroundUrl: siteUrl("images/image03@2x.jpg"),
     },
     {
-      name: "The Future Universe",
+      name: "The Future\nUniverse",
       description: "Johanna Hobel for On",
       date: "Apr 2020",
       imageUrl: "images/image04.jpg",
       backgroundUrl: siteUrl("images/image04@2x.jpg"),
     },
     {
-      name: "She was born urban",
+      name: "She was\nborn urban",
       description: "Johanna Hobel for S1",
       date: "Dec 2021",
       imageUrl: "images/image05.jpg",

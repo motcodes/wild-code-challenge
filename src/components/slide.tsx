@@ -1,50 +1,10 @@
 import gsap from "gsap";
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import charming from "charming";
 import tw, { styled } from "twin.macro";
-import { ProjectProps } from "~/pages/test2";
-import { Content } from "./Content";
-
-interface SizesProps {
-  width: number;
-  height: number;
-}
-interface TransformProps {
-  x: number;
-  y: number;
-  scale?: number;
-}
-
-interface SlidePositionProps {
-  isCurrent: boolean;
-  isRight: boolean;
-  isLeft: boolean;
-}
-
-export interface SlideRefProps extends HTMLDivElement {
-  itemRef: HTMLDivElement;
-  // current: {
-  setCurrent: () => void;
-  setRight: () => void;
-  setLeft: () => void;
-  isPositionedRight: () => boolean;
-  isPositionedLeft: () => boolean;
-  isPositionedCenter: () => boolean;
-  moveToPosition: (settings: {
-    from?: number | undefined;
-    delay?: number;
-    position?: number;
-    resetImageScale?: boolean;
-  }) => void;
-  reset: () => void;
-  hide: () => void;
-  // };
-}
-
-interface SlideProps {
-  data: ProjectProps;
-  wrapperOnClick: () => void;
-}
+import { SizesProps, SlidePositionProps, SlideProps, ImageTranslationProps } from "types";
+import { Content } from "./slideContent";
+import { breakTitle } from "./breakTitle";
 
 export const Slide = forwardRef<any, SlideProps>((props, ref) => {
   const { data, wrapperOnClick } = props;
@@ -57,8 +17,8 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
   const headingOutlinedRef = useRef<HTMLHeadingElement>(null);
   const headingFilledRef = useRef<HTMLHeadingElement>(null);
 
-  const [sizes, setSizes] = useState<SizesProps>({ width: 0, height: 0 });
-  const [transforms, setTransforms] = useState<Array<TransformProps>>([]);
+  const [wrapperSizes, setWrapperSizes] = useState<SizesProps>({ width: 0, height: 0 });
+  const [imageTranslation, setImageTranslation] = useState<Array<ImageTranslationProps>>([]);
 
   const [slidePosition, toggleSlidePosition] = useState<SlidePositionProps>({
     isCurrent: false,
@@ -66,16 +26,16 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
     isLeft: false,
   });
 
-  function calcSizes(): void {
+  function calcWrapperSizes(): void {
     if (wrapperRef.current) {
-      setSizes({
+      setWrapperSizes({
         width: wrapperRef.current.offsetWidth,
         height: wrapperRef.current.offsetHeight,
       });
     }
   }
 
-  function calcTransforms() {
+  function calcImageTranslation(): void {
     const sizes = {
       width: wrapperRef.current?.offsetWidth,
       height: wrapperRef.current?.offsetHeight,
@@ -85,7 +45,7 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
     };
 
     if (sizes.width && sizes.height) {
-      const allTransforms: Array<TransformProps> = [
+      const allTransforms: Array<ImageTranslationProps> = [
         {
           x: -sizes.windowWidth + sizes.width * sizes.scale + 16,
           y: sizes.windowHeight - sizes.height * sizes.scale - 16,
@@ -112,17 +72,19 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
           scale: sizes.scale,
         },
       ];
-      setTransforms(allTransforms);
+      setImageTranslation(allTransforms);
     }
   }
 
+  // Window Resize Event
   useEffect(() => {
     function handleResize() {
-      calcSizes();
-      calcTransforms();
+      calcWrapperSizes();
+      calcImageTranslation();
     }
 
     window.addEventListener("resize", handleResize, false);
+
     if (wrapperRef.current) {
       handleResize();
     }
@@ -130,6 +92,7 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
     return () => window.removeEventListener("resize", handleResize, false);
   }, []);
 
+  // Turning Heading Title into Letters
   useEffect(() => {
     if (headingOutlinedRef.current) {
       charming(headingOutlinedRef.current, {
@@ -148,32 +111,24 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
   }, []);
 
   function positionSlide(position: number) {
-    if (wrapperRef.current && sizes.width) {
+    if (wrapperRef.current && wrapperSizes.width) {
       gsap.set(wrapperRef.current, {
-        x: transforms[position].x,
-        y: transforms[position].y,
-        scale: transforms[position].scale ? transforms[position].scale : 1,
+        x: imageTranslation[position].x,
+        y: imageTranslation[position].y,
+        scale: imageTranslation[position].scale ? imageTranslation[position].scale : 1,
         autoAlpha: 1,
       });
-      gsap.set(".headingOutlinedLetter", {
+
+      // @ts-ignore
+      gsap.set([headingOutlinedRef.current?.children, headingFilledRef.current?.children], {
         autoAlpha: 0,
-        y: 50,
+        y: 80,
+        skewY: 15,
       });
-      gsap.set(".headingFilledLetter", {
-        autoAlpha: 0,
-        y: 50,
-      });
-      // gsap.set(headingOutlinedRef.current, {
-      //   autoAlpha: 0,
-      //   y: 50,
-      // });
-      // gsap.set(headingFilledRef.current, {
-      //   autoAlpha: 0,
-      //   y: 50,
-      // });
     }
   }
 
+  // set position to center
   function setCurrent() {
     if (slideRef.current) {
       toggleSlidePosition((prev) => ({
@@ -183,39 +138,26 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
       }));
       slideRef.current.classList.add("slide--current", "slide--visible");
 
-      const timeline = gsap.timeline();
-
-      gsap.to(".headingOutlinedLetter", {
+      const initialMotion = {
         autoAlpha: 1,
         y: 0,
+        skewY: 0,
         duration: 1,
-        delay: 0.1,
+        delay: 0,
         ease: "power4.out",
-        stagger: 0.1,
-      });
+        stagger: 0.07,
+      };
 
-      gsap.to(".headingFilledLetter", {
-        autoAlpha: 1,
-        y: 0,
-        duration: 1,
-        delay: 0.1,
-        ease: "power4.out",
-        stagger: 0.1,
-      });
+      // @ts-ignore
+      gsap.to(headingOutlinedRef.current?.children, initialMotion);
+      // @ts-ignore
+      gsap.to(headingFilledRef.current?.children, initialMotion);
 
-      gsap.to([headingOutlinedRef.current, headingFilledRef.current], {
-        autoAlpha: 1,
-        y: 0,
-        duration: 1,
-        delay: 0.125,
-        ease: "power4.out",
-        stagger: 0.1,
-      });
-
-      // set position to center
       positionSlide(2);
     }
   }
+
+  // set position to left
   function setLeft() {
     if (slideRef.current) {
       toggleSlidePosition({
@@ -226,10 +168,11 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
 
       slideRef.current.classList.add("slide--visible");
 
-      // set position to left
       positionSlide(1);
     }
   }
+
+  // set position to left
   function setRight() {
     if (slideRef.current) {
       toggleSlidePosition({
@@ -240,10 +183,10 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
 
       slideRef.current.classList.add("slide--visible");
 
-      // set position to left
       positionSlide(3);
     }
   }
+
   const isPositionedRight = () => slidePosition.isRight;
   const isPositionedLeft = () => slidePosition.isLeft;
   const isPositionedCenter = () => slidePosition.isCurrent;
@@ -264,13 +207,11 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
         scale: 1,
       });
 
-      gsap.set([".headingFilledLetter, .headingOutlinedLetter"], {
-        autoAlpha: 0,
-        y: 50,
-      });
-      gsap.set([headingOutlinedRef.current, headingFilledRef.current], {
-        autoAlpha: 0,
-        y: 50,
+      // @ts-ignore
+      gsap.set([headingFilledRef.current?.children, headingOutlinedRef.current?.children], {
+        autoAlpha: 1,
+        y: 80,
+        skewY: -15,
       });
     }
   }
@@ -280,35 +221,38 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
     delay: number;
     position: number;
     resetImageScale: boolean;
-  }): Promise<any> {
+  }): Promise<unknown> {
+    const letterAnimationProps = {
+      autoAlpha: 0,
+      y: -80,
+      skewY: 15,
+      duration: 1,
+      ease: "power4.inOut",
+      stagger: 0.07,
+    };
+
     return new Promise((resolve) => {
-      gsap.to([".headingFilledLetter, .headingOutlinedLetter"], {
-        autoAlpha: 0,
-        y: 50,
-        duration: 1,
-        ease: "power4.out",
-      });
-      gsap.to([headingOutlinedRef.current, headingFilledRef.current], {
-        autoAlpha: 0,
-        y: 50,
-        duration: 1,
-        ease: "power4.out",
-      });
+      // @ts-ignore
+      gsap.to(headingOutlinedRef.current?.children, letterAnimationProps);
+      // @ts-ignore
+      gsap.to(headingFilledRef.current?.children, letterAnimationProps);
+
       gsap.to(wrapperRef.current, {
         duration: 1.662,
         ease: "power4.inOut",
-        delay: settings.delay || 0,
+        // @ts-ignore
+        delay: (settings.delay || 0) + headingFilledRef.current?.children.length * 0.07,
         startAt:
           settings.from !== undefined
             ? {
-                x: transforms[settings.from + 2].x,
-                y: transforms[settings.from + 2].y,
-                scale: transforms[settings.from + 2].scale ? transforms[settings.from + 2].scale : 1,
+                x: imageTranslation[settings.from + 2].x,
+                y: imageTranslation[settings.from + 2].y,
+                scale: imageTranslation[settings.from + 2].scale ? imageTranslation[settings.from + 2].scale : 1,
               }
             : {},
-        x: transforms[settings.position + 2].x,
-        y: transforms[settings.position + 2].y,
-        scale: transforms[settings.position + 2].scale ? transforms[settings.position + 2].scale : 1,
+        x: imageTranslation[settings.position + 2].x,
+        y: imageTranslation[settings.position + 2].y,
+        scale: imageTranslation[settings.position + 2].scale ? imageTranslation[settings.position + 2].scale : 1,
         // @ts-ignore
         onStart: settings.from !== undefined ? () => gsap.set(wrapperRef.current, { autoAlpha: 1 }) : null,
         onComplete: resolve,
@@ -332,7 +276,7 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
   return (
     <Container ref={slideRef}>
       <Wrapper ref={wrapperRef} className="slide-wrapper" onClick={wrapperOnClick}>
-        <OutlinedTitle ref={headingOutlinedRef}>{data.name}</OutlinedTitle>
+        <OutlinedTitle ref={headingOutlinedRef}>{breakTitle(data.name)}</OutlinedTitle>
         <SlideImage
           className="slide-image"
           ref={imageRef}
@@ -359,6 +303,7 @@ const Container = styled.div`
 
   &.slide--current {
     pointer-events: auto;
+    z-index: 6;
 
     .slide-content,
     .slide-wrapper {
@@ -367,9 +312,11 @@ const Container = styled.div`
       pointer-events: auto;
     }
     .slide-wrapper h2 {
-      /* opacity: 0; */
-      /* visibility: hidden; */
       cursor: default;
+      span {
+        opacity: 0;
+        visibility: hidden;
+      }
     }
   }
   &.slide--visible {
@@ -397,10 +344,15 @@ const Container = styled.div`
     text-align: center;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-
-    /* width: 170%; */
     width: 60vw;
     pointer-events: auto;
+
+    span {
+      display: inline-block;
+      opacity: 0;
+      visibility: hidden;
+      white-space: break-spaces;
+    }
   }
 `;
 
@@ -415,8 +367,6 @@ const SlideImage = styled.img`
 `;
 
 const OutlinedTitle = styled.h2`
-  /* opacity: 0; */
-  /* visibility: hidden; */
   color: transparent;
   -webkit-text-stroke: 2px white;
 `;
