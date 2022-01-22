@@ -1,13 +1,16 @@
 import gsap from "gsap";
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 import charming from "charming";
 import tw, { styled } from "twin.macro";
 import { SizesProps, SlidePositionProps, SlideProps, ImageTranslationProps, InfoPositionProps } from "types";
+import { MouseContext } from "~/contexts/mouseContext";
 import { Content } from "./slideContent";
 import { breakTitle } from "./breakTitle";
 
 export const Slide = forwardRef<any, SlideProps>((props, ref) => {
   const { data, wrapperOnClick, slideIndex, slidesTotal, onMouseEnter, onMouseLeave } = props;
+
+  const { cursorChangeHandler } = useContext(MouseContext);
 
   const slideRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -356,7 +359,9 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
-        <OutlinedTitle ref={headingOutlinedRef}>{breakTitle(data.name)}</OutlinedTitle>
+        <OutlinedTitle className="slide-outlinedTitle" ref={headingOutlinedRef}>
+          {breakTitle(data.name)}
+        </OutlinedTitle>
         <SlideImage
           className="slide-image"
           ref={imageRef}
@@ -382,7 +387,17 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
       >
         <p>{data.description}</p>
         <p>{data.date}</p>
-        <button className="helvetica-small">Have a look</button>
+        <button
+          onMouseEnter={() => {
+            if (cursorChangeHandler) cursorChangeHandler("hovered difference");
+          }}
+          onMouseLeave={() => {
+            if (cursorChangeHandler) cursorChangeHandler("");
+          }}
+          className="helvetica-small"
+        >
+          Have a look
+        </button>
       </Info>
       <IndicatorContainer bottom={wrapperSizes.height || 0} className="slide-indicator helvetica-small">
         <p>
@@ -423,8 +438,14 @@ const Container = styled.div`
       visibility: visible;
       pointer-events: auto;
     }
+    .slide-outlinedTitle {
+      opacity: 1;
+      visibility: visible;
+    }
     .slide-wrapper h2 {
       cursor: default;
+      opacity: 1;
+      visibility: visible;
       span {
         opacity: 0;
         visibility: hidden;
@@ -432,8 +453,15 @@ const Container = styled.div`
     }
   }
   &.slide--visible {
+    * {
+      cursor: none;
+    }
     .slide-wrapper {
       pointer-events: auto;
+    }
+    .slide-outlinedTitle {
+      opacity: 0;
+      visibility: hidden;
     }
   }
   .slide-content {

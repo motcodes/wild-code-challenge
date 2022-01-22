@@ -3,7 +3,7 @@ import { AppProps } from "next/app";
 import { DefaultSeo, DefaultSeoProps } from "next-seo";
 import { GlobalStyles } from "~/styles/GlobalStyles";
 import { MouseContextProvider } from "~/contexts/mouseContext";
-import { Cursor } from "~/components/Cursor";
+import { Cursor } from "~/components/customCursor";
 
 const defaultSeo: DefaultSeoProps = {
   title: "Wild Code Challenge",

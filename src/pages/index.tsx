@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import tw, { styled } from "twin.macro";
 import gsap from "gsap";
 
@@ -8,12 +8,16 @@ import { ProjectProps, SlideIndicesProps, SlideRefProps } from "types";
 import { DefaultPage } from "~/layouts/DefaultPage";
 import { Slide } from "~/components/slide";
 import { siteUrl } from "~/utils/siteUrl";
-import { useInterval } from "~/hooks/useTimeout";
+import { useInterval } from "~/hooks/useInterval";
+import { MouseContext } from "~/contexts/mouseContext";
 interface Props {
   projects: Array<ProjectProps>;
 }
 
+// inspired by https://tympanus.net/codrops/2018/08/28/diagonal-slideshow/
 const Index: NextPage<Props> = ({ projects }) => {
+  const { cursorChangeHandler } = useContext(MouseContext);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const backgroundImageRef = useRef<HTMLDivElement>(null);
   const slideshowRef = useRef<HTMLDivElement>(null);
@@ -185,7 +189,7 @@ const Index: NextPage<Props> = ({ projects }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useInterval(() => navigate("next"), paused ? null : 10000);
+  useInterval(() => navigate("next"), paused ? null : 15000);
 
   return (
     <>
@@ -203,8 +207,14 @@ const Index: NextPage<Props> = ({ projects }) => {
                 slideIndex={index}
                 slidesTotal={slidesTotal}
                 wrapperOnClick={() => handleClick(index)}
-                onMouseEnter={() => setPaused(true)}
-                onMouseLeave={() => setPaused(false)}
+                onMouseEnter={() => {
+                  if (cursorChangeHandler) cursorChangeHandler("hovered");
+                  setPaused(true);
+                }}
+                onMouseLeave={() => {
+                  if (cursorChangeHandler) cursorChangeHandler("");
+                  setPaused(false);
+                }}
               />
             ))}
           </Slideshow>
