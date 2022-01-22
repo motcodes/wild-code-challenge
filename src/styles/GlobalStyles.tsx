@@ -20,6 +20,9 @@ const CustomStyles = createGlobalStyle`
     font-display: swap;
   }
 
+  * {
+    cursor: none;
+  }
 
   html {
     ${tw`bg-white text-white cursor-default leading-none min-h-full`}
@@ -33,6 +36,16 @@ const CustomStyles = createGlobalStyle`
   body,
   #__next {
     ${tw`flex flex-col flex-1`}
+  }
+
+  .helvetica-small {
+    font-family: Helvetica;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 10px;
+    line-height: 120%;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;  
   }
 `;
 

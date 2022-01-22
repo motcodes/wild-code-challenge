@@ -13,9 +13,11 @@ export function Content({ className, contentRef, wrapperRef, headingRef, data }:
   }, [wrapperRef]);
 
   return (
-    <Container ref={contentRef} wrapperHeight={wrapperHeight} className={className}>
-      <h2 ref={headingRef}>{breakTitle(data.name)}</h2>
-    </Container>
+    <>
+      <Container ref={contentRef} wrapperHeight={wrapperHeight} className={className}>
+        <h2 ref={headingRef}>{breakTitle(data.name)}</h2>
+      </Container>
+    </>
   );
 }
 

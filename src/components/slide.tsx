@@ -7,13 +7,16 @@ import { Content } from "./slideContent";
 import { breakTitle } from "./breakTitle";
 
 export const Slide = forwardRef<any, SlideProps>((props, ref) => {
-  const { data, wrapperOnClick } = props;
+  const { data, wrapperOnClick, slideIndex, slidesTotal, onMouseEnter, onMouseLeave } = props;
 
   const slideRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const contentRef = useRef<HTMLImageElement>(null);
   const infoRef = useRef<HTMLImageElement>(null);
+
+  const indicatorRef = useRef<HTMLImageElement>(null);
+  const indicatorIndexRef = useRef<HTMLSpanElement>(null);
 
   const headingOutlinedRef = useRef<HTMLHeadingElement>(null);
   const headingFilledRef = useRef<HTMLHeadingElement>(null);
@@ -141,6 +144,16 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
         y: 30,
         skewY: 15,
       });
+      // @ts-ignore
+      gsap.set(indicatorIndexRef.current, {
+        autoAlpha: 0,
+        y: 10,
+        skewY: 15,
+      });
+      // @ts-ignore
+      gsap.to(indicatorRef.current, {
+        backgroundColor: "transparent",
+      });
     }
   }
 
@@ -170,6 +183,14 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
       gsap.to(headingFilledRef.current?.children, initialMotion);
       // @ts-ignore
       gsap.to(infoRef.current?.children, { ...initialMotion, delay: 0.5 });
+      // @ts-ignore
+      gsap.to(indicatorIndexRef.current, { ...initialMotion, delay: 1, stagger: undefined });
+      // @ts-ignore
+      gsap.to(indicatorRef.current, {
+        backgroundColor: "rgba(255, 255, 255, 1)",
+        duration: 0.667,
+        ease: "power4.out",
+      });
 
       positionSlide(2);
     }
@@ -238,6 +259,16 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
         y: 30,
         skewY: -15,
       });
+      // @ts-ignore
+      gsap.set(indicatorRef.current, {
+        backgroundColor: "transparent",
+      });
+      // @ts-ignore
+      gsap.set(indicatorIndexRef.current, {
+        autoAlpha: 1,
+        y: 10,
+        skewY: -15,
+      });
     }
   }
 
@@ -265,6 +296,19 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
       gsap.to(infoRef.current?.children, {
         ...letterAnimationProps,
         y: -30,
+      });
+      gsap.to(indicatorRef.current, {
+        backgroundColor: "transparent",
+        duration: 0.667,
+        ease: "power4.inOut",
+        // delay: 0.7,
+      });
+      // @ts-ignore
+      gsap.to(indicatorIndexRef.current, {
+        ...letterAnimationProps,
+        y: -10,
+        stagger: undefined,
+        delay: 0.7,
       });
 
       gsap.to(wrapperRef.current, {
@@ -305,7 +349,13 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
 
   return (
     <Container ref={slideRef}>
-      <Wrapper ref={wrapperRef} className="slide-wrapper" onClick={wrapperOnClick}>
+      <Wrapper
+        ref={wrapperRef}
+        className="slide-wrapper"
+        onClick={wrapperOnClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
         <OutlinedTitle ref={headingOutlinedRef}>{breakTitle(data.name)}</OutlinedTitle>
         <SlideImage
           className="slide-image"
@@ -323,11 +373,34 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
         headingRef={headingFilledRef}
         data={data}
       />
-      <Info ref={infoRef} className="slide-info" bottom={infoPosition.bottom || 0} left={infoPosition.left || 0}>
+
+      <Info
+        ref={infoRef}
+        className="slide-info helvetica-small"
+        bottom={infoPosition.bottom || 0}
+        left={infoPosition.left || 0}
+      >
         <p>{data.description}</p>
         <p>{data.date}</p>
-        <button>Have a look</button>
+        <button className="helvetica-small">Have a look</button>
       </Info>
+      <IndicatorContainer bottom={wrapperSizes.height || 0} className="slide-indicator helvetica-small">
+        <p>
+          <span tw="inline-block" ref={indicatorIndexRef}>
+            {slideIndex + 1}
+          </span>{" "}
+          of 5
+        </p>
+        <IndicatorWrapper>
+          {[...Array(slidesTotal)].map((_, index) => (
+            <Indicator
+              key={`Indicator-${index}`}
+              ref={index === slideIndex ? indicatorRef : null}
+              className={index === slideIndex ? "slide-indicator-filled" : ""}
+            />
+          ))}
+        </IndicatorWrapper>
+      </IndicatorContainer>
     </Container>
   );
 });
@@ -344,7 +417,8 @@ const Container = styled.div`
 
     .slide-content,
     .slide-wrapper,
-    .slide-info {
+    .slide-info,
+    .slide-indicator {
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
@@ -367,8 +441,10 @@ const Container = styled.div`
     top: 50%;
     transform: translateY(-50%);
   }
-  .slide-info {
+  .slide-info,
+  .slide-indicator {
     opacity: 0;
+    visibility: hidden;
   }
 
   h2 {
@@ -415,10 +491,6 @@ const OutlinedTitle = styled.h2`
 const Info = styled.div<{ bottom: number; left: number }>`
   ${tw`absolute justify-self-start flex flex-col justify-center items-end uppercase `}
   row-gap: 16px;
-  font-family: Helvetica;
-  font-size: 10px;
-  line-height: 120%;
-  letter-spacing: 0.08em;
   width: 110px;
 
   bottom: ${({ bottom }) => `${bottom}px`};
@@ -427,10 +499,38 @@ const Info = styled.div<{ bottom: number; left: number }>`
   button {
     ${tw`relative flex flex-row items-start bg-white rounded-3xl font-bold uppercase select-none`}
     padding: 9px 16px 8px;
-    font-family: Helvetica;
-    font-size: 10px;
-    line-height: 120%;
-    letter-spacing: 0.08em;
     color: #202020;
+  }
+`;
+
+const IndicatorContainer = styled.div<{ bottom: number }>`
+  position: absolute;
+  bottom: ${({ bottom }) => `calc(50% - ${bottom / 3.5}px)`};
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 24px;
+`;
+
+const IndicatorWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+`;
+
+const Indicator = styled.span`
+  width: 5px;
+  height: 8px;
+  border-radius: 2px;
+  border: 1px solid white;
+  background-color: rgba(255, 255, 255, 0);
+  transition: all 1s ease;
+
+  &.slide-indicator-filled {
+    /* background-color: rgba(255, 255, 255, 1); */
   }
 `;

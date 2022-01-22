@@ -55,6 +55,10 @@ export interface SlideRefProps extends HTMLDivElement {
 export interface SlideProps {
   data: ProjectProps;
   wrapperOnClick: () => void;
+  slideIndex: number;
+  slidesTotal: number;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }
 
 export interface ContentProps {

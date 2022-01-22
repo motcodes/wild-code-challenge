@@ -8,6 +8,7 @@ import { ProjectProps, SlideIndicesProps, SlideRefProps } from "types";
 import { DefaultPage } from "~/layouts/DefaultPage";
 import { Slide } from "~/components/slide";
 import { siteUrl } from "~/utils/siteUrl";
+import { useInterval } from "~/hooks/useTimeout";
 interface Props {
   projects: Array<ProjectProps>;
 }
@@ -17,6 +18,8 @@ const Index: NextPage<Props> = ({ projects }) => {
   const backgroundImageRef = useRef<HTMLDivElement>(null);
   const slideshowRef = useRef<HTMLDivElement>(null);
   const slidesRefs = useRef<Array<SlideRefProps>>([]);
+
+  const [paused, setPaused] = useState<boolean>(false);
 
   const [slidesTotal, setSlidesTotal] = useState<number>(0);
 
@@ -51,7 +54,6 @@ const Index: NextPage<Props> = ({ projects }) => {
   );
 
   function handleClick(index: number) {
-    // setNewCurrent(index);
     if (slidesRefs.current[index].isPositionedRight()) {
       navigate("next");
     } else if (slidesRefs.current[index].isPositionedLeft()) {
@@ -183,6 +185,8 @@ const Index: NextPage<Props> = ({ projects }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useInterval(() => navigate("next"), paused ? null : 10000);
+
   return (
     <>
       <NextSeo title="Code Challange" />
@@ -193,10 +197,14 @@ const Index: NextPage<Props> = ({ projects }) => {
           <Slideshow ref={slideshowRef}>
             {projects.map((project, index) => (
               <Slide
-                ref={(el) => (slidesRefs.current[index] = el)}
-                data={project}
-                wrapperOnClick={() => handleClick(index)}
                 key={project.name}
+                data={project}
+                ref={(el) => (slidesRefs.current[index] = el)}
+                slideIndex={index}
+                slidesTotal={slidesTotal}
+                wrapperOnClick={() => handleClick(index)}
+                onMouseEnter={() => setPaused(true)}
+                onMouseLeave={() => setPaused(false)}
               />
             ))}
           </Slideshow>

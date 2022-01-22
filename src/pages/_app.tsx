@@ -2,6 +2,8 @@ import NextHead from "next/head";
 import { AppProps } from "next/app";
 import { DefaultSeo, DefaultSeoProps } from "next-seo";
 import { GlobalStyles } from "~/styles/GlobalStyles";
+import { MouseContextProvider } from "~/contexts/mouseContext";
+import { Cursor } from "~/components/Cursor";
 
 const defaultSeo: DefaultSeoProps = {
   title: "Wild Code Challenge",
@@ -33,7 +35,10 @@ const App = ({ Component, pageProps }: AppProps) => {
         <link rel="preload" href="/fonts/Tungsten-Semibold.woff2" as="font" type="font/woff2" crossOrigin="" />
       </NextHead>
       <GlobalStyles />
-      <Component {...pageProps} />
+      <MouseContextProvider>
+        <Cursor />
+        <Component {...pageProps} />
+      </MouseContextProvider>
     </>
   );
 };
