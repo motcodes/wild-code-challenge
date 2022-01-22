@@ -193,7 +193,7 @@ const Index: NextPage<Props> = ({ projects }) => {
 
   return (
     <>
-      <NextSeo title="Code Challange" />
+      <NextSeo title="Code Challenge" />
       <DefaultPage>
         <Container ref={containerRef}>
           <BackgroundImage imageUrl={slideBackgroundUrl} />
