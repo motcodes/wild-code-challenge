@@ -189,7 +189,7 @@ const Index: NextPage<Props> = ({ projects }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useInterval(() => navigate("next"), paused ? null : 15000);
+  // useInterval(() => navigate("next"), paused ? null : 15000);
 
   return (
     <>
@@ -233,6 +233,15 @@ const Container = styled.div`
 const BackgroundImage = styled.div<{ imageUrl: string }>`
   ${tw`absolute inset-0 w-full h-full`}
   background-image: ${({ imageUrl }) => `url('${imageUrl}')`};
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position-y: center;
+  @supports not ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
+    filter: blur(200px);
+    width: calc(100% + 256px);
+    height: calc(100% + 256px);
+    inset: -160px;
+  }
 `;
 
 const Slideshow = styled.section`
