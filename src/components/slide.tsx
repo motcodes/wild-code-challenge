@@ -359,7 +359,7 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
-        <OutlinedTitle className="slide-outlinedTitle" ref={headingOutlinedRef}>
+        <OutlinedTitle className="slide-outlinedTitle" ref={headingOutlinedRef} onMouseEnter={onMouseLeave}>
           {breakTitle(data.name)}
         </OutlinedTitle>
         <SlideImage
@@ -443,7 +443,6 @@ const Container = styled.div`
       visibility: visible;
     }
     .slide-wrapper h2 {
-      cursor: default;
       opacity: 1;
       visibility: visible;
       span {
