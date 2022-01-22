@@ -189,7 +189,7 @@ const Index: NextPage<Props> = ({ projects }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // useInterval(() => navigate("next"), paused ? null : 15000);
+  useInterval(() => navigate("next"), paused ? null : 15000);
 
   return (
     <>

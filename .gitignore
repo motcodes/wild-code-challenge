@@ -31,3 +31,4 @@ yarn-error.log*
 **/.cache
 .vercel
 .idea
+.env.local
