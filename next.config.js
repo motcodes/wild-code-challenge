@@ -12,7 +12,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    domains: ["localhost", "wild-code-challange.mot.codes"],
+    domains: ["localhost", "wild-code-challange.mot.codes", "vercel.app"],
   },
 
   webpack: (config) => {
