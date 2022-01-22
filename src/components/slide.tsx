@@ -4,6 +4,7 @@ import charming from "charming";
 import tw, { styled } from "twin.macro";
 import { SizesProps, SlidePositionProps, SlideProps, ImageTranslationProps, InfoPositionProps } from "types";
 import { MouseContext } from "~/contexts/mouseContext";
+import { siteUrl } from "~/utils/siteUrl";
 import { Content } from "./slideContent";
 import { breakTitle } from "./breakTitle";
 
@@ -367,7 +368,7 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
           ref={imageRef}
           width={248}
           height={330}
-          src={`http://localhost:3000/${data.imageUrl}`}
+          src={`${siteUrl(data.imageUrl)}`}
           alt={data.name}
         />
       </Wrapper>
