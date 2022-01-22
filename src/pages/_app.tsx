@@ -6,9 +6,9 @@ import { MouseContextProvider } from "~/contexts/mouseContext";
 import { Cursor } from "~/components/customCursor";
 
 const defaultSeo: DefaultSeoProps = {
-  title: "Wild Code Challenge",
+  title: "Wild Code Challenge by @motcodes",
   titleTemplate: "%s | wild",
-  description: "This is the 2021 Wild Code Challenge.",
+  description: "This is the 2021 Wild Code Challenge by @motcodes.",
   twitter: {
     cardType: "summary_large_image",
   },

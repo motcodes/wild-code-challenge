@@ -52,8 +52,6 @@ export const Slide = forwardRef<any, SlideProps>((props, ref) => {
       windowHeight: window.innerHeight,
       scale: 0.484375,
     };
-    console.log(process.env.NEXT_PUBLIC_SITE_URL);
-    console.log(siteUrl(data.imageUrl));
 
     if (sizes.width && sizes.height) {
       const allTransforms: Array<ImageTranslationProps> = [
